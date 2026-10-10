@@ -1,4 +1,4 @@
-﻿name: BrandBloom CI/CD Pipeline
+name: BrandBloom CI/CD Pipeline
 
 on:
   push:
@@ -30,8 +30,13 @@ jobs:
       - name: Prisma Generate
         run: npx prisma generate
 
-      - name: TypeScript Check
-        run: npx tsc --noEmit
+      - name: Build Next.js Application
+        run: npm run build
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/brandbloom"
+          NEXTAUTH_SECRET: "ci-test-secret-at-least-32-chars-long"
+          AUTH_SECRET: "ci-test-secret-at-least-32-chars-long"
+          NEXTAUTH_URL: "http://localhost:3000"
 
   docker-build:
     name: Build & Publish Docker Image

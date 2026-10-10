@@ -1,4 +1,4 @@
-﻿# Multi-stage Dockerfile for BrandBloom Next.js Platform
+# Multi-stage Dockerfile for BrandBloom Next.js Platform
 FROM node:20-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
@@ -12,6 +12,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/brandbloom"
+ENV NEXTAUTH_SECRET="build-secret-dummy-key-for-static-pages-32"
+ENV AUTH_SECRET="build-secret-dummy-key-for-static-pages-32"
 RUN npx prisma generate
 RUN npm run build
 
