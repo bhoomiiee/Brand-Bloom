@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
+import { getAppBaseUrl } from '@/lib/utils'
 
 export async function GET(
   req: Request,
@@ -47,7 +48,7 @@ export async function GET(
         conversionRate: 3.2,
         bounceRate: 41.5,
         healthScore: store.products.length >= 5 ? 88 : 65,
-        url: `http://localhost:3000/store/${store.slug}`,
+        url: `${getAppBaseUrl(req)}/store/${store.slug}`,
         tags: [store.theme, store.businessType],
         products: store.products,
         recentOrders: store.orders,

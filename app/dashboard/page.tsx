@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Package, ShoppingCart, Palette, Upload, TrendingUp, Users, AlertCircle, Clock, Sparkles, ArrowRight } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { BotanicalCardAccent } from '@/components/ui/botanical-decorations'
+import DeployedStoreLinkBanner from '@/components/dashboard/deployed-store-link-banner'
 
 export const metadata: Metadata = {
   title: 'Dashboard | BrandBloom',
@@ -127,6 +128,14 @@ export default async function DashboardPage({
           </Link>
         </div>
       </div>
+
+      {/* Live Deployed Storefront Distribution & Cloud Deployment Banner */}
+      <DeployedStoreLinkBanner
+        storeId={store.id}
+        storeSlug={store.slug}
+        storeName={store.name}
+        publishedAt={store.publishedAt}
+      />
 
       {/* Platform Admin Optimization Proposal Banner */}
       {pendingAdminRec && (

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { getCategoriesForBusinessType, DEMO_PRODUCTS_BY_CATEGORY, getTailoredContentForStore } from '@/lib/constants'
-import { slugify } from '@/lib/utils'
+import { slugify, getAppBaseUrl } from '@/lib/utils'
 
 export async function POST(request: NextRequest) {
   try {
@@ -181,12 +181,25 @@ export async function POST(request: NextRequest) {
       ],
     })
 
+    const baseUrl = getAppBaseUrl(request)
+    const deployedUrl = `${baseUrl}/store/${store.slug}`
+
     return NextResponse.json({
       success: true,
       store: {
         id: store.id,
         name: store.name,
         slug: store.slug,
+        deployedUrl,
+        status: store.status,
+        publishedAt: store.publishedAt,
+        businessType: store.businessType,
+        theme: store.theme,
+      },
+      deployment: {
+        status: 'READY',
+        provider: 'BrandBloom Global Edge CDN',
+        deployedAt: store.publishedAt?.toISOString(),
       },
     })
   } catch (error) {

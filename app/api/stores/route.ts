@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
+import { getAppBaseUrl } from '@/lib/utils'
 
 export async function GET(req: Request) {
   try {
@@ -66,7 +67,7 @@ export async function GET(req: Request) {
         conversionRate: store.products.length > 5 ? 3.4 : 1.8,
         bounceRate: store.products.length > 5 ? 38.5 : 52.0,
         healthScore,
-        url: `http://localhost:3000/store/${store.slug}`,
+        url: `${getAppBaseUrl(req)}/store/${store.slug}`,
         tags: [store.theme || 'modern', categoryName],
         createdAt: store.createdAt.toISOString(),
         updatedAt: store.updatedAt.toISOString(),
@@ -161,7 +162,7 @@ export async function POST(req: Request) {
         conversionRate: 2.1,
         bounceRate: 45.0,
         healthScore: 75,
-        url: `http://localhost:3000/store/${store.slug}`,
+        url: `${getAppBaseUrl(req)}/store/${store.slug}`,
         tags: ['modern', category || 'Retail'],
         createdAt: store.createdAt.toISOString(),
         updatedAt: store.updatedAt.toISOString(),
