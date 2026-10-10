@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { getTheme } from '@/lib/themes'
+import { serializeDecimal } from '@/lib/utils'
 import { StorefrontLayout } from '@/components/storefront/storefront-layout'
 import { StorefrontHero } from '@/components/storefront/storefront-hero'
 import { FeaturedProducts } from '@/components/storefront/featured-products'
@@ -71,21 +72,23 @@ export default async function StorePage({ params }: StorePageProps) {
   }
 
   const theme = getTheme(store.theme || 'modern')
-  const products = await getFeaturedProducts(store.id)
-  const siteContent = store.siteContent
+  const rawProducts = await getFeaturedProducts(store.id)
+  const products = serializeDecimal(rawProducts)
+  const cleanStore = serializeDecimal(store)
+  const siteContent = cleanStore.siteContent
 
   return (
-    <StorefrontLayout store={store} theme={theme}>
+    <StorefrontLayout store={cleanStore} theme={theme}>
       <StorefrontHero 
-        store={store}
+        store={cleanStore}
         siteContent={siteContent}
         theme={theme}
       />
 
-      {store.categories.length > 0 && (
+      {cleanStore.categories.length > 0 && (
         <CategoryGrid 
-          categories={store.categories}
-          storeSlug={store.slug}
+          categories={cleanStore.categories}
+          storeSlug={cleanStore.slug}
           theme={theme}
         />
       )}
@@ -93,7 +96,7 @@ export default async function StorePage({ params }: StorePageProps) {
       {products.length > 0 && (
         <FeaturedProducts 
           products={products}
-          storeSlug={store.slug}
+          storeSlug={cleanStore.slug}
           theme={theme}
         />
       )}
