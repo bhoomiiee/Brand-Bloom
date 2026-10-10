@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 15 33% 96%; /* #F8F2F0 Warm off-white */
+    --foreground: 337 31% 18%; /* #3D202B Dark text */
+    --card: 0 0% 100%; /* #FFFFFF White */
+    --card-foreground: 337 31% 18%; /* #3D202B Dark text */
+    --popover: 0 0% 100%;
+    --popover-foreground: 337 31% 18%;
+    --primary: 339 38% 28%; /* #632D40 Primary burgundy */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 345 46% 90%; /* #F1D9DF Soft blush */
+    --secondary-foreground: 339 38% 28%; /* #632D40 Burgundy */
+    --muted: 345 35% 93%;
+    --muted-foreground: 337 9% 46%; /* #806B73 Muted text */
+    --accent: 341 33% 61%; /* #BD7C91 Dusty rose */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 344 19% 89%; /* #E8DDE0 Borders */
+    --input: 344 19% 89%;
+    --ring: 339 38% 28%;
+    --radius: 0.75rem;
+
+    /* Shared BrandBloom Central Color Variables */
+    --brand-burgundy: #632D40;
+    --brand-dusty-rose: #BD7C91;
+    --brand-blush: #F1D9DF;
+    --brand-offwhite: #F8F2F0;
+    --brand-dark: #3D202B;
+    --brand-muted: #806B73;
+    --brand-border: #E8DDE0;
+    --brand-white: #FFFFFF;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 271 91% 65%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 271 91% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  /* Storefront Theme Variables (defaults - can be overridden) */
+  :root {
+    --color-primary: #8B5CF6;
+    --color-secondary: #EC4899;
+    --color-accent: #F59E0B;
+    --color-background: #FFFFFF;
+    --color-foreground: #1F2937;
+    --color-muted: #F3F4F6;
+    --color-border: #E5E7EB;
+    --font-heading: 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Storefront Theme Utilities */
+.theme-bg-primary {
+  background-color: var(--color-primary);
+}
+
+.theme-bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+.theme-bg-accent {
+  background-color: var(--color-accent);
+}
+
+.theme-bg-muted {
+  background-color: var(--color-muted);
+}
+
+.theme-text-primary {
+  color: var(--color-primary);
+}
+
+.theme-text-secondary {
+  color: var(--color-secondary);
+}
+
+.theme-text-foreground {
+  color: var(--color-foreground);
+}
+
+.theme-border {
+  border-color: var(--color-border);
+}
+
+.theme-font-heading {
+  font-family: var(--font-heading);
+}
+
+.theme-font-body {
+  font-family: var(--font-body);
+}
+
+/* BrandBloom Option 4: Burgundy + Dusty Rose + Blush Utilities */
+.bg-brand-burgundy { background-color: var(--brand-burgundy); }
+.text-brand-burgundy { color: var(--brand-burgundy); }
+.border-brand-burgundy { border-color: var(--brand-burgundy); }
+
+.bg-brand-dusty-rose { background-color: var(--brand-dusty-rose); }
+.text-brand-dusty-rose { color: var(--brand-dusty-rose); }
+.border-brand-dusty-rose { border-color: var(--brand-dusty-rose); }
+
+.bg-brand-blush { background-color: var(--brand-blush); }
+.text-brand-blush { color: var(--brand-blush); }
+.border-brand-blush { border-color: var(--brand-blush); }
+
+.bg-brand-offwhite { background-color: var(--brand-offwhite); }
+.text-brand-dark { color: var(--brand-dark); }
+.text-brand-muted { color: var(--brand-muted); }
+.border-brand-border { border-color: var(--brand-border); }
+
+.brand-card {
+  background-color: var(--brand-white);
+  border: 1px solid var(--brand-border);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px -2px rgba(99, 45, 64, 0.05), 0 1px 3px -1px rgba(99, 45, 64, 0.03);
+  transition: all 0.2s ease;
+}
+
+.brand-card:hover {
+  box-shadow: 0 8px 16px -4px rgba(99, 45, 64, 0.08), 0 2px 6px -2px rgba(99, 45, 64, 0.04);
+}
+
+.badge-blush {
+  background-color: var(--brand-blush);
+  color: var(--brand-burgundy);
+  font-weight: 600;
+}
+
+.badge-burgundy {
+  background-color: var(--brand-burgundy);
+  color: var(--brand-white);
+  font-weight: 600;
+}
+
+.badge-rose {
+  background-color: rgba(189, 124, 145, 0.18);
+  color: var(--brand-burgundy);
+  border: 1px solid rgba(189, 124, 145, 0.35);
+  font-weight: 600;
+}
+
+/* Subtle botanical organic gradient background */
+.bg-botanical-glow {
+  background-image: 
+    radial-gradient(circle at 90% 10%, rgba(241, 217, 223, 0.5) 0%, transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(189, 124, 145, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(248, 242, 240, 0.8) 0%, transparent 100%);
+}
+

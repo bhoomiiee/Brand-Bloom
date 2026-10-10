@@ -1,0 +1,48 @@
+import { ReactNode } from 'react'
+import { Store, Category } from '@prisma/client'
+import { ThemeConfig } from '@/lib/themes'
+import { StorefrontThemeProvider } from '@/components/theme/storefront-theme-provider'
+import { CartProvider } from '@/components/cart/cart-provider'
+import { StorefrontHeader } from './storefront-header'
+import { StorefrontFooter } from './storefront-footer'
+
+import { CustomerProvider } from './customer-provider'
+import { CustomerAuthModal } from './customer-auth-modal'
+import { CustomerOrdersModal } from './customer-orders-modal'
+
+interface StorefrontLayoutProps {
+  store: Store & { categories: Category[] }
+  theme: ThemeConfig
+  children: ReactNode
+}
+
+export function StorefrontLayout({ store, theme, children }: StorefrontLayoutProps) {
+  return (
+    <StorefrontThemeProvider theme={theme}>
+      <CustomerProvider storeId={store.id} storeSlug={store.slug}>
+        <CartProvider storeSlug={store.slug}>
+          <div className="min-h-screen flex flex-col">
+            <StorefrontHeader
+              store={store}
+              theme={theme}
+              categories={store.categories}
+            />
+
+            <main className="flex-1">
+              {children}
+            </main>
+
+            <StorefrontFooter
+              store={store}
+              theme={theme}
+            />
+
+            {/* Customer Modals */}
+            <CustomerAuthModal storeName={store.name} theme={theme} />
+            <CustomerOrdersModal storeSlug={store.slug} theme={theme} />
+          </div>
+        </CartProvider>
+      </CustomerProvider>
+    </StorefrontThemeProvider>
+  )
+}
