@@ -67,6 +67,16 @@ export function FeaturedProducts({ products, storeSlug, theme }: FeaturedProduct
                     </div>
                   )}
                   
+                  {/* Discount / Sale Badge */}
+                  {product.comparePrice && Number(product.comparePrice) > Number(product.price) && (
+                    <div
+                      className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider text-white shadow-xs"
+                      style={{ backgroundColor: '#632D40' }}
+                    >
+                      SALE {Math.round((1 - Number(product.price) / Number(product.comparePrice)) * 100)}% OFF
+                    </div>
+                  )}
+
                   {/* Stock Badge */}
                   {product.stock <= 5 && product.stock > 0 && (
                     <div

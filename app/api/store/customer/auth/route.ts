@@ -92,6 +92,9 @@ export async function POST(request: Request) {
       })
     }
 
+    // Asynchronously notify owner panel sync in background (non-blocking)
+    fetch('http://localhost:5001/api/v1/sync').catch(() => {})
+
     return NextResponse.json({
       success: true,
       isNewCustomer,

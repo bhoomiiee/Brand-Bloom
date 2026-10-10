@@ -17,11 +17,18 @@ interface StorefrontLayoutProps {
 }
 
 export function StorefrontLayout({ store, theme, children }: StorefrontLayoutProps) {
+  const banner = (store as any).siteContent?.find((c: any) => c.key === 'announcement_banner')?.value
+
   return (
     <StorefrontThemeProvider theme={theme}>
       <CustomerProvider storeId={store.id} storeSlug={store.slug}>
         <CartProvider storeSlug={store.slug}>
           <div className="min-h-screen flex flex-col">
+            {banner && (
+              <div className="bg-gradient-to-r from-[#632D40] via-[#BD7C91] to-[#632D40] text-white text-xs font-semibold py-2.5 px-4 text-center tracking-wide flex items-center justify-center gap-2 border-b border-[#BD7C91]/40 shadow-xs animate-in fade-in duration-300">
+                <span>{banner}</span>
+              </div>
+            )}
             <StorefrontHeader
               store={store}
               theme={theme}

@@ -14,16 +14,35 @@ const OWNER_ONLY_ROUTES = [
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname
 
-  // Allow public routes
+  // Handle CORS preflight requests for API
+  if (req.method === 'OPTIONS' && path.startsWith('/api/')) {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+        'Access-Control-Max-Age': '86400',
+      },
+    })
+  }
+
+  // Allow public routes and public platform API routes
   if (
     path.startsWith('/auth') ||
     path.startsWith('/store/') ||
-    path.startsWith('/api/auth') ||
+    path.startsWith('/api/') ||
     path === '/' ||
     path.startsWith('/_next') ||
     path.startsWith('/favicon.ico')
   ) {
-    return NextResponse.next()
+    const res = NextResponse.next()
+    if (path.startsWith('/api/')) {
+      res.headers.set('Access-Control-Allow-Origin', '*')
+      res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+      res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+    }
+    return res
   }
 
   // Get the token

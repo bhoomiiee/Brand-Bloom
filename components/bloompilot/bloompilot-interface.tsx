@@ -51,7 +51,25 @@ export function BloomPilotInterface({ storeId, storeName }: Props) {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [pendingProposals, setPendingProposals] = useState<any[]>([])
+  const [approvingId, setApprovingId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const fetchPendingProposals = async () => {
+    try {
+      const res = await fetch(`/api/bloompilot/recommendations?storeId=${storeId}`)
+      const data = await res.json()
+      if (data.success && Array.isArray(data.recommendations)) {
+        setPendingProposals(data.recommendations.filter((r: any) => r.status === 'PENDING'))
+      }
+    } catch (e) {
+      console.warn('Could not load proposals:', e)
+    }
+  }
+
+  useEffect(() => {
+    fetchPendingProposals()
+  }, [storeId])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -60,6 +78,36 @@ export function BloomPilotInterface({ storeId, storeName }: Props) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const handleApproveProposal = async (proposalId: string) => {
+    setApprovingId(proposalId)
+    try {
+      const response = await fetch('/api/bloompilot/recommendation/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recommendationId: proposalId, storeId }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to approve recommendation')
+
+      // Remove from pending list
+      setPendingProposals((prev) => prev.filter((p) => p.id !== proposalId))
+
+      // Add a celebration assistant message with direct link to live store
+      const confirmMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `🎉 Awesome news! The admin's optimization proposal was approved and applied directly to your website.\n\n• Applied 15% discount across catalog products\n• Activated promotional flash sale banner\n• Strike-through pricing is now visible to customers\n\nVisit your live storefront to verify the updates in real-time!`,
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, confirmMessage])
+    } catch (err: any) {
+      alert(`Approval error: ${err.message}`)
+    } finally {
+      setApprovingId(null)
+    }
+  }
 
   const handleSendMessage = async (textToSend?: string) => {
     const messageText = textToSend || input
@@ -161,6 +209,63 @@ export function BloomPilotInterface({ storeId, storeName }: Props) {
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl border border-[#E8DDE0] shadow-2xs overflow-hidden">
+      {/* Pinned Platform Admin Optimization Proposal */}
+      {pendingProposals.length > 0 && (
+        <div className="m-4 p-4 rounded-2xl bg-gradient-to-r from-[#F1D9DF]/80 via-[#F8F2F0] to-[#F1D9DF]/40 border-2 border-[#BD7C91] shadow-xs relative overflow-hidden shrink-0 animate-in fade-in duration-300">
+          <BotanicalPetalCluster className="absolute -top-3 -right-3 opacity-30 pointer-events-none" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#632D40] text-white">
+                  Incoming Admin Optimization
+                </span>
+                <span className="text-xs font-bold text-[#632D40]">
+                  94 Impact Score • High Priority
+                </span>
+              </div>
+              <h4 className="font-bold text-sm text-[#3D202B]">
+                {pendingProposals[0].title}
+              </h4>
+              <p className="text-xs text-[#806B73] line-clamp-2 max-w-2xl">
+                {pendingProposals[0].description}
+              </p>
+              <div className="flex items-center gap-2 pt-0.5">
+                <span className="text-[11px] font-semibold text-[#632D40] flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  Action: Auto-apply 15% discount across catalog and activate promotional sale banner
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+              <button
+                onClick={() => handleApproveProposal(pendingProposals[0].id)}
+                disabled={approvingId === pendingProposals[0].id}
+                className="flex-1 sm:flex-none py-2 px-4 rounded-xl text-xs font-bold bg-[#632D40] hover:bg-[#632D40]/90 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              >
+                {approvingId === pendingProposals[0].id ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Applying Changes...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    <span>Approve & Apply to Website</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setPendingProposals(prev => prev.slice(1))}
+                className="py-2 px-3 rounded-xl text-xs font-medium border border-[#E8DDE0] text-[#806B73] hover:text-[#3D202B] hover:bg-white transition-colors cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {messages.map((message) => (

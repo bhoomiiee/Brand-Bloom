@@ -166,31 +166,76 @@ export async function getCurrentStore() {
   const session = await auth()
   
   if (session?.currentStoreId) {
-    const store = await db.store.findUnique({
-      where: {
-        id: session.currentStoreId,
-      },
-    })
-    if (store) return store
+    try {
+      const store = await db.store.findUnique({
+        where: {
+          id: session.currentStoreId,
+        },
+      })
+      if (store) return store
+    } catch (err: any) {
+      console.warn('Prisma store lookup failed, retrying after brief pause...', err.message)
+      await new Promise(r => setTimeout(r, 600))
+      try {
+        const store = await db.store.findUnique({
+          where: {
+            id: session.currentStoreId,
+          },
+        })
+        if (store) return store
+      } catch (retryErr) {
+        console.warn('Prisma retry failed, using session store fallback')
+      }
+    }
+
+    // Fallback: If session has store info from JWT, return synthetic store object
+    const sessionStore = (session.stores as any[])?.find(s => s.id === session.currentStoreId) || (session.stores as any[])?.[0]
+    if (sessionStore) {
+      return {
+        id: sessionStore.id,
+        name: sessionStore.name,
+        slug: sessionStore.slug,
+        businessType: 'retail',
+        theme: 'minimal',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any
+    }
   }
 
   // Fallback: If session user exists, check db for active membership directly
   if (session?.user?.id) {
-    const membership = await db.membership.findFirst({
-      where: {
-        userId: session.user.id,
-        status: 'ACTIVE',
-      },
-      include: {
-        store: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    })
+    try {
+      const membership = await db.membership.findFirst({
+        where: {
+          userId: session.user.id,
+          status: 'ACTIVE',
+        },
+        include: {
+          store: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      })
 
-    if (membership?.store) {
-      return membership.store
+      if (membership?.store) {
+        return membership.store
+      }
+    } catch (err) {
+      console.warn('Membership lookup error:', err)
+      const sessionStore = (session.stores as any[])?.[0]
+      if (sessionStore) {
+        return {
+          id: sessionStore.id,
+          name: sessionStore.name,
+          slug: sessionStore.slug,
+          businessType: 'retail',
+          theme: 'minimal',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as any
+      }
     }
   }
 
