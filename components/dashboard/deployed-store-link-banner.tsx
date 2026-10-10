@@ -12,7 +12,9 @@ import {
   RefreshCw, 
   ShieldCheck, 
   Zap, 
-  Sparkles
+  Sparkles,
+  Edit2,
+  CheckCircle2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -29,21 +31,32 @@ export default function DeployedStoreLinkBanner({
   storeName,
   publishedAt,
 }: Props) {
-  const [liveUrl, setLiveUrl] = useState('')
+  // Default production public domain (never localhost by default for sharing)
+  const defaultProdHost = process.env.NEXT_PUBLIC_APP_URL || 'https://brandbloom.store'
+  
+  const [useProductionUrl, setUseProductionUrl] = useState(true)
+  const [customDomain, setCustomDomain] = useState(defaultProdHost)
+  const [isEditingDomain, setIsEditingDomain] = useState(false)
+  const [domainInput, setDomainInput] = useState(defaultProdHost)
+  
+  const [liveUrl, setLiveUrl] = useState(`${defaultProdHost}/store/${storeSlug}`)
   const [copied, setCopied] = useState(false)
   const [showQr, setShowQr] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [deploySuccessMessage, setDeploySuccessMessage] = useState<string | null>(null)
   const [lastDeployTime, setLastDeployTime] = useState<string>(
-    publishedAt ? new Date(publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live'
+    publishedAt ? new Date(publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live on CDN'
   )
 
+  // Update liveUrl when mode or customDomain changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const origin = window.location.origin
-      setLiveUrl(`${origin}/store/${storeSlug}`)
+    if (useProductionUrl) {
+      const cleanHost = customDomain.replace(/\/$/, '')
+      setLiveUrl(`${cleanHost}/store/${storeSlug}`)
+    } else if (typeof window !== 'undefined') {
+      setLiveUrl(`${window.location.origin}/store/${storeSlug}`)
     }
-  }, [storeSlug])
+  }, [useProductionUrl, customDomain, storeSlug])
 
   const copyToClipboard = () => {
     if (navigator.clipboard && liveUrl) {
@@ -53,9 +66,19 @@ export default function DeployedStoreLinkBanner({
     }
   }
 
+  const saveCustomDomain = () => {
+    let clean = domainInput.trim()
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+      clean = `https://${clean}`
+    }
+    clean = clean.replace(/\/$/, '')
+    setCustomDomain(clean)
+    setIsEditingDomain(false)
+  }
+
   const shareViaWhatsApp = () => {
     const text = encodeURIComponent(
-      `🎉 Check out our live storefront website "${storeName}" on BrandBloom!\n\n🛍️ Shop here:\n${liveUrl}`
+      `🎉 Congratulations! Our store "${storeName}" is officially live and deployed on BrandBloom!\n\n🛍️ Visit the live storefront:\n${liveUrl}`
     )
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank')
   }
@@ -63,7 +86,7 @@ export default function DeployedStoreLinkBanner({
   const shareViaEmail = () => {
     const subject = encodeURIComponent(`Live Website Link for "${storeName}"`)
     const body = encodeURIComponent(
-      `Hello!\n\nHere is your official live deployed website link for ${storeName}:\n\n${liveUrl}\n\nThis storefront is active, SSL secured, and connected to our real-time inventory system.\n\nBest regards,\nBrandBloom Team`
+      `Hello!\n\nHere is your official live deployed website link for ${storeName}:\n\n${liveUrl}\n\nThis storefront is active, SSL secured, and connected to real-time inventory.\n\nBest regards,\nBrandBloom Team`
     )
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank')
   }
@@ -105,18 +128,18 @@ export default function DeployedStoreLinkBanner({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-base text-[#3D202B]">
-                Live Storefront Website
+                Live Deployed Storefront
               </span>
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                 </span>
-                <span>Active & Deployed</span>
+                <span>Active & Deployed (HTTPS)</span>
               </span>
             </div>
             <p className="text-xs text-[#806B73] mt-0.5">
-              Available to customers and ready to share with the store owner
+              Production cloud URL ready to share with the store owner & customers
             </p>
           </div>
         </div>
@@ -138,7 +161,7 @@ export default function DeployedStoreLinkBanner({
             onClick={() => window.open(liveUrl, '_blank')}
             className="bg-[#632D40] hover:bg-[#632D40]/90 text-white text-xs font-semibold gap-1.5 shadow-xs"
           >
-            <span>Open Website</span>
+            <span>Visit Live Website</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Button>
         </div>
@@ -152,6 +175,65 @@ export default function DeployedStoreLinkBanner({
         </div>
       )}
 
+      {/* URL Mode Selector (Public Deployed vs Local Dev) */}
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 bg-[#F1D9DF]/40 p-1 rounded-xl border border-[#BD7C91]/30">
+          <button
+            onClick={() => setUseProductionUrl(true)}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              useProductionUrl 
+                ? 'bg-[#632D40] text-white shadow-2xs' 
+                : 'text-[#632D40] hover:bg-[#F1D9DF]/60'
+            }`}
+          >
+            🌐 Public Deployed Link (For Store Owner)
+          </button>
+          <button
+            onClick={() => setUseProductionUrl(false)}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              !useProductionUrl 
+                ? 'bg-[#632D40] text-white shadow-2xs' 
+                : 'text-[#632D40] hover:bg-[#F1D9DF]/60'
+            }`}
+          >
+            💻 Localhost Preview
+          </button>
+        </div>
+
+        {useProductionUrl && (
+          <div className="flex items-center gap-2">
+            {isEditingDomain ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={domainInput}
+                  onChange={(e) => setDomainInput(e.target.value)}
+                  placeholder="https://your-domain.com"
+                  className="px-2.5 py-1 text-xs border rounded-lg bg-white border-[#BD7C91] text-[#3D202B] outline-none"
+                />
+                <Button size="sm" onClick={saveCustomDomain} className="h-7 text-xs bg-[#632D40] text-white">
+                  Save
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setIsEditingDomain(false)} className="h-7 text-xs">
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setDomainInput(customDomain)
+                  setIsEditingDomain(true)
+                }}
+                className="text-[11px] font-semibold text-[#632D40] hover:underline flex items-center gap-1"
+              >
+                <Edit2 className="w-3 h-3 text-[#BD7C91]" />
+                <span>Change Domain ({customDomain.replace(/^https?:\/\//, '')})</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* URL Display and Quick Sharing Bar */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -161,7 +243,7 @@ export default function DeployedStoreLinkBanner({
               type="text"
               readOnly
               value={liveUrl}
-              className="w-full bg-transparent text-xs sm:text-sm font-mono text-[#3D202B] outline-none select-all"
+              className="w-full bg-transparent text-xs sm:text-sm font-mono text-[#3D202B] font-semibold outline-none select-all"
             />
           </div>
 
@@ -183,7 +265,7 @@ export default function DeployedStoreLinkBanner({
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5 mr-1" />
-                  <span>Copy Deployed Link</span>
+                  <span>Copy Link for Owner</span>
                 </>
               )}
             </Button>
@@ -195,7 +277,7 @@ export default function DeployedStoreLinkBanner({
               className="border-[#BD7C91]/40 text-[#632D40] hover:bg-[#F1D9DF]/40 text-xs font-semibold gap-1 px-3"
             >
               <QrCode className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{showQr ? 'Close' : 'QR'}</span>
+              <span className="hidden sm:inline">{showQr ? 'Close QR' : 'QR Code'}</span>
             </Button>
           </div>
         </div>
@@ -212,10 +294,10 @@ export default function DeployedStoreLinkBanner({
             </div>
             <div className="space-y-1 text-center sm:text-left">
               <h4 className="text-xs font-bold text-[#3D202B]">
-                Scan to Open on Mobile Device
+                Scan to Open Public Storefront on Mobile Device
               </h4>
               <p className="text-[11px] text-[#806B73] max-w-sm">
-                Store owners can point their camera at this code to test mobile ordering, payments, and storefront styling in real time.
+                Point your mobile camera at this QR code to visit the deployed store website: <strong>{liveUrl}</strong>
               </p>
             </div>
           </div>
@@ -224,25 +306,25 @@ export default function DeployedStoreLinkBanner({
         {/* Sharing Action Pills */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <span className="text-[11px] font-bold text-[#806B73] mr-1">
-            Share with Store Owner:
+            Send Deployed Link to Store Owner:
           </span>
           <button
             onClick={shareViaWhatsApp}
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-all"
           >
             <Smartphone className="w-3 h-3 text-emerald-600" />
-            <span>WhatsApp</span>
+            <span>Share via WhatsApp</span>
           </button>
           <button
             onClick={shareViaEmail}
             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 transition-all"
           >
             <Share2 className="w-3 h-3 text-blue-600" />
-            <span>Email</span>
+            <span>Send via Email</span>
           </button>
 
           <span className="text-[11px] text-[#806B73] ml-auto hidden md:inline">
-            Last Edge Sync: <strong className="text-[#3D202B]">{lastDeployTime}</strong>
+            Status: <strong className="text-emerald-700">SSL Encrypted • Global CDN</strong>
           </span>
         </div>
       </div>

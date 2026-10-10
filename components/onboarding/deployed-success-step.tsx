@@ -34,13 +34,11 @@ export default function DeployedSuccessStep({ store }: Props) {
   const [showQr, setShowQr] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const currentOrigin = window.location.origin
-      const fullUrl = store.deployedUrl && !store.deployedUrl.includes('localhost') 
-        ? store.deployedUrl 
-        : `${currentOrigin}/store/${store.slug || ''}`
-      setLiveUrl(fullUrl)
-    }
+    const defaultHost = (process.env.NEXT_PUBLIC_APP_URL || 'https://brandbloom.store').replace(/\/$/, '')
+    const fullUrl = store.deployedUrl && !store.deployedUrl.includes('localhost') 
+      ? store.deployedUrl 
+      : `${defaultHost}/store/${store.slug || ''}`
+    setLiveUrl(fullUrl)
   }, [store.deployedUrl, store.slug])
 
   const copyToClipboard = () => {
